@@ -11,3 +11,12 @@ keep it as lightweight as possible, and also as 'retro' as possible.
 
 With CanChat you can chat just like they do in those Hacker-movies.
 
+## UPDATE
+Deploying on Heroku with this version seems to be a no go due to their internal routing
+
+we can connect through
+> telnet URL 443
+
+but... this does not persist
+
+checkout devel branch for new implementation using Flask Sockets
