@@ -48,6 +48,7 @@ class Chat():
         name = name.replace('\n', '').replace('\r', '')
         self.NAMES[sock] = name
         self.broadcast_data(self.server_socket, 'User {} has joined the room \n'.format(name))
+        sock.send('To quit chat send EXITCALL. To get the logs send GETLOGS \n')
         pass
 
     def main(self):
@@ -55,36 +56,36 @@ class Chat():
             print('running')
             read_sockets, write_sockets, error_sockets = select.select(self.CONNECTIONS, [], [])
 
-            for sock in read_sockets:
-                print(sock)
-                if sock == self.server_socket:
+            for client in read_sockets:
+                print(client)
+                if client == self.server_socket:
                     sockfd, addr = self.server_socket.accept()
                     self.CONNECTIONS.append(sockfd)
                     start_new_thread(self.create_name, (sockfd,))
 
                 else:
                     try:
-                        message = sock.recv(self.config['MESSAGE_BUFFER'])
+                        message = client.recv(self.config['MESSAGE_BUFFER'])
                         if message:
                             if message.replace('\n', '').replace('\r', '') == 'EXITCALL':
-                                sock.close()
-                                self.CONNECTIONS.remove(sock)
+                                client.close()
+                                self.CONNECTIONS.remove(client)
                                 self.broadcast_data(self.server_socket,
-                                                    "User {} has left the channel\n".format(self.NAMES[sock]))
-                                break
+                                                    "User {} has left the channel\n".format(self.NAMES[client]))
+                                continue
 
                             if message.replace('\n', '').replace('\r', '') == 'GETLOGS':
                                 log_file = open('bin/logs', 'r')
                                 text = log_file.readlines()
                                 log_file.close()
-                                sock.send(''.join(text))
-                                break
+                                client.send(''.join(text))
+                                continue
 
-                            self.broadcast_data(sock, message)
+                            self.broadcast_data(client, message)
                     except:
-                        self.broadcast_data(sock, "User {} has left the channel\n".format(self.NAMES[sock]))
-                        sock.close()
-                        self.CONNECTIONS.remove(sock)
+                        self.broadcast_data(client, "User {} has left the channel\n".format(self.NAMES[client]))
+                        client.close()
+                        self.CONNECTIONS.remove(client)
                         continue
 
     def exit(self):
