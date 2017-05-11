@@ -19,4 +19,4 @@ we can connect through
 
 but... this does not persist
 
-checkout devel branch for new implementation using Flask Sockets
+Ngrok might work though.
